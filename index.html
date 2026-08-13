@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Manutenção</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: var(--primary);
+        }
+        .card {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .item-manutencao {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-manutencao:last-child {
+            border-bottom: none;
+        }
+        .info h3 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+        }
+        .info p {
+            margin: 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .btn-deletar {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            width: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔧 Meu Carro</h1>
+    
+    <!-- Formulário -->
+    <div class="card">
+        <div class="form-group">
+            <label for="servico">Serviço</label>
+            <select id="servico">
+                <option value="Troca de Óleo Motor">Troca de Óleo Motor</option>
+                <option value="Troca de Óleo Câmbio">Troca de Óleo Câmbio</option>
+                <option value="Limpador de Para-brisa">Limpador de Para-brisa</option>
+                <option value="Pastilha de Freio">Pastilha de Freio</option>
+                <option value="Alinhamento e Balanceamento">Alinhamento e Balanceamento</option>
+                <option value="Troca / Rodízio de Pneus">Troca / Rodízio de Pneus</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="data">Data</label>
+            <input type="date" id="data">
+        </div>
+        
+        <div class="form-group">
+            <label for="km">Quilometragem (KM)</label>
+            <input type="number" id="km" placeholder="Ex: 45000">
+        </div>
+        
+        <button onclick="salvarManutencao()">Salvar Registro</button>
+    </div>
+
+    <!-- Lista de Histórico -->
+    <h2>Histórico</h2>
+    <div class="card" id="lista-historico">
+        <!-- Os itens salvos vão aparecer aqui -->
+    </div>
+</div>
+
+<script>
+    // Define a data de hoje no input automaticamente ao abrir
+    document.getElementById('data').valueAsDate = new Date();
+
+    // Função para carregar os dados salvos
+    function carregarHistorico() {
+        const historico = JSON.parse(localStorage.getItem('manutencoes')) || [];
+        const lista = document.getElementById('lista-historico');
+        lista.innerHTML = '';
+
+        if (historico.length === 0) {
+            lista.innerHTML = '<p style="color:#64748b; text-align:center; margin:0;">Nenhum registro encontrado.</p>';
+            return;
+        }
+
+        // Ordena do mais recente para o mais antigo
+        historico.reverse().forEach((item, index) => {
+            // Corrige a exibição da data para o padrão brasileiro
+            const dataFormatada = new Date(item.data + 'T00:00:00').toLocaleDateString('pt-BR');
+            
+            lista.innerHTML += `
+                <div class="item-manutencao">
+                    <div class="info">
+                        <h3>${item.servico}</h3>
+                        <p>📅 ${dataFormatada} | 🚗 ${item.km} KM</p>
+                    </div>
+                    <button class="btn-deletar" onclick="deletarItem(${historico.length - 1 - index})">Apagar</button>
+                </div>
+            `;
+        });
+    }
+
+    // Função para salvar um novo item
+    function salvarManutencao() {
+        const servico = document.getElementById('servico').value;
+        const data = document.getElementById('data').value;
+        const km = document.getElementById('km').value;
+
+        if (!data || !km) {
+            alert('Por favor, preencha a data e a quilometragem!');
+            return;
+        }
+
+        const novoItem = { servico, data, km };
+        const historico = JSON.parse(localStorage.getItem('manutencoes')) || [];
+        
+        historico.push(novoItem);
+        localStorage.setItem('manutencoes', JSON.stringify(historico));
+
+        // Limpa o campo de KM e atualiza a tela
+        document.getElementById('km').value = '';
+        carregarHistorico();
+    }
+
+    // Função para deletar um item específico
+    function deletarItem(index) {
+        if (confirm('Tem certeza que deseja apagar este registro?')) {
+            const historico = JSON.parse(localStorage.getItem('manutencoes')) || [];
+            historico.splice(index, 1);
+            localStorage.setItem('manutencoes', JSON.stringify(historico));
+            carregarHistorico();
+        }
+    }
+
+    // Inicializa a lista ao abrir o app
+    carregarHistorico();
+</script>
+
+</body>
+</html>
