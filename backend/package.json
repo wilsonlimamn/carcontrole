@@ -1,0 +1,12 @@
+{
+  "name": "carcontrole-backend",
+  "version": "1.0.0",
+  "description": "Backend em Node.js para o app carcontrole",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
